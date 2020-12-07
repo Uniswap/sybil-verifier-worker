@@ -3,6 +3,7 @@
 This is a verifier used by the Sybil interface for verifying links between Ethereum addresses and Twitter profiles. 
 
 - Sybil interface for governance: [https://sybil-interface.vercel.app/#/delegates/uniswap](https://sybil-interface.vercel.app/#/delegates/uniswap)
+- Sybil documentation: [https://github.com/Uniswap/sybil-list](https://github.com/Uniswap/sybil-list)
 - Interface repo: [https://github.com/Uniswap/sybil-interface](https://github.com/Uniswap/sybil-interface)
 - Read the Sybil annoucnement post : [link to post]()
 
