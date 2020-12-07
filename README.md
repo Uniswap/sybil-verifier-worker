@@ -32,6 +32,12 @@ Once you are ready, you can publish your code by running the following command:
 wrangler publish
 ```
 
+To work with changes locally before publishing run 
+
+```
+wrangler preview --watch  
+```
+
 #### Serverless
 
 To deploy using serverless add a [`serverless.yml`](https://serverless.com/framework/docs/providers/cloudflare/) file.
