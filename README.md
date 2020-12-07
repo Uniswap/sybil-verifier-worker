@@ -5,7 +5,7 @@ This is a verifier used by the Sybil interface for verifying links between Ether
 - Sybil interface for governance: [https://sybil-interface.vercel.app/#/delegates/uniswap](https://sybil-interface.vercel.app/#/delegates/uniswap)
 - Sybil documentation: [https://github.com/Uniswap/sybil-list](https://github.com/Uniswap/sybil-list)
 - Interface repo: [https://github.com/Uniswap/sybil-interface](https://github.com/Uniswap/sybil-interface)
-- Read the Sybil annoucnement post : [link to post]()
+- Read the Sybil announcement post : [link to post]()
 
 ## Development
 
@@ -42,3 +42,5 @@ wrangler preview --watch
 #### Serverless
 
 To deploy using serverless add a [`serverless.yml`](https://serverless.com/framework/docs/providers/cloudflare/) file.
+
+
