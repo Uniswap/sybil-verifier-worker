@@ -1,4 +1,4 @@
-import { recoverTypedSignature_v4 } from 'eth-sig-util'
+import { recoverPersonalSignature } from 'eth-sig-util'
 import { ethers } from 'ethers'
 import { gatherResponse } from '../utils'
 import { Octokit } from '@octokit/rest'
@@ -92,11 +92,12 @@ export async function handleVerify(request) {
             },
         }
 
-        // recover the signer based on handle
+        // parse sig from tweet
         const sig = matchedText[0].slice(0, 132)
 
-        const signer = recoverTypedSignature_v4({
-            data,
+        // recover signer
+        const signer = recoverPersonalSignature({
+            data: JSON.stringify(data),
             sig,
         })
 
@@ -132,13 +133,14 @@ export async function handleVerify(request) {
         // Decode the String as json object
         var decodedSybilList = JSON.parse(atob(fileJSON.content))
         decodedSybilList[formattedSigner] = {
-            timestamp: Date.now(),
-            tweetID,
-            handle,
+            twitter: {
+                timestamp: Date.now(),
+                tweetID,
+                handle,
+            },
         }
 
         const stringData = JSON.stringify(decodedSybilList)
-
         const encodedData = btoa(stringData)
 
         const octokit = new Octokit({
