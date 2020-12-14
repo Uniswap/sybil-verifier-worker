@@ -96,7 +96,7 @@ export async function handleVerify(request) {
         const sig = matchedText[0].slice(0, 132)
 
         const signer = recoverPersonalSignature({
-            data: JSON.stringify(data),
+            data: Buffer.from(JSON.stringify(data)).toString('hex'),
             sig,
         })
 
