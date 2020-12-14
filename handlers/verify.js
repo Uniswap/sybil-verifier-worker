@@ -1,4 +1,4 @@
-import { recoverTypedSignature_v4 } from 'eth-sig-util'
+import { recoverPersonalSignature } from 'eth-sig-util'
 import { ethers } from 'ethers'
 import { gatherResponse } from '../utils'
 import { Octokit } from '@octokit/rest'
@@ -95,8 +95,8 @@ export async function handleVerify(request) {
         // recover the signer based on handle
         const sig = matchedText[0].slice(0, 132)
 
-        const signer = recoverTypedSignature_v4({
-            data,
+        const signer = recoverPersonalSignature({
+            data: JSON.stringify(data),
             sig,
         })
 
