@@ -180,5 +180,6 @@ export async function handleVerify(request) {
             status: 400,
             statusText: 'Error:' + e,
         });
+        return response;
     }
 }
