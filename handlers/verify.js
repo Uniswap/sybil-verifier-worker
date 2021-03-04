@@ -1,3 +1,4 @@
+import { makeVerifiableCredential } from '../verifiableCredentials';
 import { recoverPersonalSignature } from 'eth-sig-util';
 import { ethers } from 'ethers';
 import { gatherResponse } from '../utils';
@@ -112,27 +113,28 @@ export async function handleVerify(request) {
             });
         }
 
+
         // initialize response
         let response;
 
-        const fileName = 'verified.json';
-        const githubPath = '/repos/Uniswap/sybil-list/contents/';
+        // TODO: RESTORE
+        // const fileName = 'verified.json';
+        // const githubPath = '/repos/Uniswap/sybil-list/contents/';
 
-        const fileInfo = await fetch(
-            'https://api.github.com' + githubPath + fileName,
-            {
-                headers: {
-                    Authorization: 'token ' + GITHUB_AUTHENTICATION,
-                    'User-Agent': USER_AGENT,
-                },
-            }
-        );
-        const fileJSON = await fileInfo.json();
-        const sha = fileJSON.sha;
-
+        // const fileInfo = await fetch(
+        //     'https://api.github.com' + githubPath + fileName,
+        //     {
+        //         headers: {
+        //             Authorization: 'token ' + GITHUB_AUTHENTICATION,
+        //             'User-Agent': USER_AGENT,
+        //         },
+        //     }
+        // );
+        // const fileJSON = await fileInfo.json();
+        // const sha = fileJSON.sha;
         // Decode the String as json object
-        var decodedSybilList = JSON.parse(atob(fileJSON.content));
-        decodedSybilList[formattedSigner] = {
+        // var decodedSybilList = JSON.parse(atob(fileJSON.content));
+        let subject = {
             twitter: {
                 timestamp: Date.now(),
                 tweetID,
@@ -140,31 +142,41 @@ export async function handleVerify(request) {
             },
         };
 
-        const stringData = JSON.stringify(decodedSybilList);
-        const encodedData = btoa(stringData);
+        let vc = makeVerifiableCredential(formattedSigner, subject);
+        // TODO: REMOVE ON RESTORE
+        let fileRes = await fetch('https://raw.githubusercontent.com/Uniswap/sybil-list/master/verified.json');
+        let decodedSybilList = await fileRes.json();
 
-        const octokit = new Octokit({
-            auth: GITHUB_AUTHENTICATION,
-        });
+        decodedSybilList[formattedSigner] = subject;
 
-        const updateResponse = await octokit.request(
-            'PUT ' + githubPath + fileName,
-            {
-                owner: 'uniswap',
-                repo: 'sybil-list',
-                path: fileName,
-                message: 'Linking ' + formattedSigner + ' to handle: ' + handle,
-                sha,
-                content: encodedData,
-            }
-        );
+        // const stringData = JSON.stringify(decodedSybilList);
+        // const encodedData = btoa(stringData);
 
+        // const octokit = new Octokit({
+        //     auth: GITHUB_AUTHENTICATION,
+        // });
+        // const updateResponse = await octokit.request(
+        //     'PUT ' + githubPath + fileName,
+        //     {
+        //         owner: 'uniswap',
+        //         repo: 'sybil-list',
+        //         path: fileName,
+        //         message: 'Linking ' + formattedSigner + ' to handle: ' + handle,
+        //         sha,
+        //         content: encodedData,
+        //     }
+        // );
+
+        // TODO: REMOVE ON RESTORE
+        let updateResponse = {status: 200};
         if (updateResponse.status === 200) {
             // respond with handle if succesul update
-            response = new Response(handle, init, {
+            let respBody = {handle: handle, verifiableCredential: vc};
+            response = new Response(JSON.stringify(respBody), {
                 status: 200,
                 statusText: 'Succesful verification',
             });
+            response.headers.set('Content-Type', 'appliction/json');
         } else {
             response = new Response(null, init, {
                 status: 400,
