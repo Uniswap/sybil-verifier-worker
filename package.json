@@ -10,11 +10,12 @@
     "author": "ianlapham <ianlapham@gmail.com>",
     "license": "ISC",
     "devDependencies": {
+        "@open-wc/webpack-import-meta-loader": "^0.4.7",
         "prettier": "^1.17.0"
     },
     "dependencies": {
         "@octokit/rest": "^18.0.10",
-		"didkit-wasm": "file:../didkit/lib/wasm/pkg",
+        "didkit-wasm": "file:../didkit/lib/wasm/pkg",
         "eth-sig-util": "^3.0.0",
         "ethers": "^5.0.24",
         "install": "^0.13.0",
