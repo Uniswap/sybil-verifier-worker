@@ -41,7 +41,7 @@ export async function handleVerify(request) {
 
         // get tweet data from twitter api
         const twitterURL = `https://api.twitter.com/2/tweets?ids=${tweetID}&expansions=author_id&user.fields=username`;
-      requestOptions.headers.set('Origin', new URL(twitterURL).origin); // format for cors
+        requestOptions.headers.set('Origin', new URL(twitterURL).origin); // format for cors
         const twitterRes = await fetch(twitterURL, requestOptions);
 
         // parse the response from Twitter
@@ -113,9 +113,9 @@ export async function handleVerify(request) {
             });
         }
 
-
         // initialize response
         let response;
+
 
         // TODO: RESTORE
         // const fileName = 'verified.json';
@@ -142,12 +142,23 @@ export async function handleVerify(request) {
             },
         };
 
-        let vc = makeVerifiableCredential(formattedSigner, subject);
+        let mnemonic = atob(MNEMONIC);
+
+        try {
+          let vc = await makeVerifiableCredential(formattedSigner, subject, mnemonic);
+        } catch(err) {
+          return new Response(null, init, {
+              status: 400,
+              statusText: 'Error creating verifiable credential.',
+          });
+        }
+
         // TODO: REMOVE ON RESTORE
         let fileRes = await fetch('https://raw.githubusercontent.com/Uniswap/sybil-list/master/verified.json');
         let decodedSybilList = await fileRes.json();
 
         decodedSybilList[formattedSigner] = subject;
+
 
         // const stringData = JSON.stringify(decodedSybilList);
         // const encodedData = btoa(stringData);
