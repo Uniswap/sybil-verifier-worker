@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
-import { loadDIOKit } from './DIDKit';
 import { ethers } from 'ethers';
+import * as wasm from "didkit-wasm/didkit_wasm_bg.wasm";
 
-export async function makeVerifiableCredential(subjectAddress, subject, mnemonic) {
+export async function makeVerifiableCredential(subjectAddress, issuerAddress, signingAddress, subject) {
   let context = [
     'https://www.w3.org/2018/credentials/v1',
     {
@@ -22,7 +22,7 @@ export async function makeVerifiableCredential(subjectAddress, subject, mnemonic
   let doc = {
     '@context': context,
     id: 'urn:uuid:' + uuid(),
-    issuer: 'did:ethr:' + subjectAddress,
+    issuer: 'did:ethr:' + issuerAddress,
     issuanceDate: new Date().toISOString(),
     type: ['VerifiableCredential'],
     credentialSubject: {
@@ -38,13 +38,11 @@ export async function makeVerifiableCredential(subjectAddress, subject, mnemonic
   };
 
 
-  return await makeEthVc(subjectAddress, doc, mnemonic);
+  return await makeEthVc(subjectAddress, signingAddress, doc);
 
 };
 
-async function makeEthVc(subjectAddress, doc, mnemonic) {
-  const DIDKit = await loadDIOKit();
-
+async function makeEthVc(subjectAddress, signingAddress, doc) {
   const credentialString = JSON.stringify(
     doc
   );
@@ -58,12 +56,26 @@ async function makeEthVc(subjectAddress, doc, mnemonic) {
 
   const keyType = { kty: 'EC', crv: 'secp256k1', alg: 'ES256K-R' };
 
-  let prepStr = await DIDKit.prepareIssueCredential(
-    credentialString,
-    JSON.stringify(proofOptions),
-    JSON.stringify(keyType)
-  );
+  let prepStr;
+  console.log("about to init didkit")
+  let DIDKit;
+  try {
+    DIDKit = await new WebAssembly.Instance(wasm).exports;
 
+    console.log("about to prepare")
+    prepStr = await DIDKit.prepareIssueCredential(
+      credentialString,
+      JSON.stringify(proofOptions),
+      JSON.stringify(keyType)
+    );
+
+  } catch (err) {
+    console.error(err)
+    return;
+  }
+
+
+  console.log("after prepare")
   let preparation = JSON.parse(prepStr);
   const typedData = preparation.signingInput;
 
@@ -72,15 +84,19 @@ async function makeEthVc(subjectAddress, doc, mnemonic) {
     throw new Error('Expected EIP-712 TypedData');
   };
 
-  const wallet = ethers.Wallet.fromMnemonic(mnemonic);
+  console.log("about to make wallet")
+  const wallet = new ethers.Wallet(signingAddress);
 
-  let signature = wallet.signMessage(JSON.stringify(typedData));
+  console.log("about to sign")
+  let signature = await wallet.signMessage(JSON.stringify(typedData));
 
+  console.log("about to complete issue")
   let vcStr = await DIDKit.completeIssueCredential(
     credentialString,
     JSON.stringify(preparation),
     signature
   );
 
+  console.log("about to return from vc maker")
   return JSON.parse(vcStr);
 }

@@ -50,6 +50,7 @@ async function handleRequest(request) {
 const PROXY_ENDPOINT = '/api';
 
 addEventListener('fetch', event => {
+    console.log("TEST");
     const request = event.request;
     const url = new URL(request.url);
     if (url.pathname.startsWith(PROXY_ENDPOINT)) {
