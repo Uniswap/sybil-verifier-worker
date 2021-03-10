@@ -1,0 +1,28 @@
+{
+    "name": "my-worker-with-router",
+    "version": "1.0.0",
+    "description": "package for creating workers templates",
+    "main": "src/index.js",
+    "scripts": {
+        "build": "webpack",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "format": "prettier --write '**/*.{js,css,json,md}'"
+    },
+    "author": "ianlapham <ianlapham@gmail.com>",
+    "license": "ISC",
+    "devDependencies": {
+        "prettier": "^1.17.0",
+        "stream-browserify": "^3.0.0",
+        "webpack": "^5.24.4",
+        "webpack-cli": "^4.5.0"
+    },
+    "dependencies": {
+        "@octokit/rest": "^18.0.10",
+        "eth-sig-util": "^3.0.0",
+        "ethers": "^5.0.24",
+        "install": "^0.13.0",
+        "npm": "^6.14.8",
+        "serverless-cloudflare-workers": "^1.2.0",
+        "uuid": "^8.3.2"
+    }
+}

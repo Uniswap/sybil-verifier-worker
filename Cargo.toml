@@ -1,7 +1,6 @@
 [package]
-name = "wasm-sybil-verifier-worker"
+name = "sybil-verifier-worker"
 version = "0.1.0"
-authors = ["Tiago Nascimento <tiago.nascimento@spruceid.com>"]
 edition = "2018"
 
 [dependencies]

@@ -1818,6 +1818,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 
 [[package]]
+name = "sybil-verifier-worker"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "didkit",
+ "getrandom 0.2.2",
+ "js-sys",
+ "rand",
+ "serde_json",
+ "ssi",
+ "wasm-bindgen",
+ "wasm-bindgen-futures 0.4.21",
+ "wasm-bindgen-test",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2091,22 +2107,6 @@ checksum = "0789dac148a8840bbcf9efe13905463b733fa96543bfbf263790535c11af7ba5"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
-]
-
-[[package]]
-name = "wasm-sybil-verifier-worker"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "didkit",
- "getrandom 0.2.2",
- "js-sys",
- "rand",
- "serde_json",
- "ssi",
- "wasm-bindgen",
- "wasm-bindgen-futures 0.4.21",
- "wasm-bindgen-test",
 ]
 
 [[package]]
