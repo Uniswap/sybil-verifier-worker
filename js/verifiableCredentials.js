@@ -1,10 +1,16 @@
-import { v4 as uuid } from 'uuid';
-import { hashMessage } from "@ethersproject/hash";
-import { arrayify, hexlify, hexZeroPad, splitSignature, joinSignature } from "@ethersproject/bytes";
-import elliptic from "elliptic";
+import { v4 as uuid } from 'uuid'
+import { hashMessage } from '@ethersproject/hash'
+import {
+    arrayify,
+    hexlify,
+    hexZeroPad,
+    splitSignature,
+    joinSignature,
+} from '@ethersproject/bytes'
+import elliptic from 'elliptic'
 
-let ec = new elliptic.ec("secp256k1")
-let keyPair = ec.keyFromPrivate(arrayify(hexlify(SIGNING_KEY)));
+let ec = new elliptic.ec('secp256k1')
+let keyPair = ec.keyFromPrivate(arrayify(hexlify(SIGNING_KEY)))
 
 export async function makeVerifiableCredential(
     subjectAddress,
@@ -82,13 +88,18 @@ async function makeEthVc(subjectAddress, doc) {
         }
 
         console.log('about to sign')
-        let signature = keyPair.sign(arrayify(hashMessage(JSON.stringify(typedData))), {canonical: true});
-        signature = joinSignature(splitSignature({
-            recoveryParam: signature.recoveryParam,
-            r: hexZeroPad("0x" + signature.r.toString(16), 32),
-            s: hexZeroPad("0x" + signature.s.toString(16), 32),
-        }));
-        console.log(signature);
+        let signature = keyPair.sign(
+            arrayify(hashMessage(JSON.stringify(typedData))),
+            { canonical: true }
+        )
+        signature = joinSignature(
+            splitSignature({
+                recoveryParam: signature.recoveryParam,
+                r: hexZeroPad('0x' + signature.r.toString(16), 32),
+                s: hexZeroPad('0x' + signature.s.toString(16), 32),
+            })
+        )
+        console.log(signature)
 
         console.log('about to complete issue')
         let vcStr = await completeIssueCredential(
@@ -99,7 +110,7 @@ async function makeEthVc(subjectAddress, doc) {
 
         console.log('about to return from vc maker')
         return JSON.parse(vcStr)
-        return { hello: "worker" }
+        return { hello: 'worker' }
     } catch (err) {
         // TODO: Change to throw
         console.error(err)

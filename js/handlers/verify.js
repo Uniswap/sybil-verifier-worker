@@ -33,11 +33,46 @@ const reg = new RegExp('(?<=sig:).*')
  * 4. if signer is the expected address, update gist with address -> handle mapping
  */
 export async function handleVerify(request) {
+    let response
     try {
         // get tweet id and account from url
         const { searchParams } = new URL(request.url)
         let tweetID = searchParams.get('id')
         let account = searchParams.get('account')
+
+        // TODO: RESTORE
+        // const githubPath = '/repos/Uniswap/sybil-list/contents/';
+        const githubPath = '/repos/spruceid/uniswap-sybil-list/contents/'
+
+        const fileName = 'verified.json'
+
+        const fileInfo = await fetch(
+            'https://api.github.com' + githubPath + fileName,
+            {
+                headers: {
+                    Authorization: 'token ' + GITHUB_AUTHENTICATION,
+                    'User-Agent': USER_AGENT,
+                },
+            }
+        )
+
+        const fileJSON = await fileInfo.json()
+        const sha = fileJSON.sha
+
+        // Decode the String as json object
+        let vcMap = JSON.parse(atob(fileJSON.content))
+        let vc = vcMap[account]
+
+        // TODO: Check tweet ID here.
+        if (vc && vc.evidence[0].sybil.twitter.tweetID === `${tweetID}`) {
+            response = new Response(JSON.stringify(vc), {
+                status: 200,
+            })
+
+            response.headers.set('Access-Control-Allow-Origin', '*')
+            response.headers.append('Vary', 'Origin')
+            return response
+        }
 
         // get tweet data from twitter api
         const twitterURL = `https://api.twitter.com/2/tweets?ids=${tweetID}&expansions=author_id&user.fields=username`
@@ -113,26 +148,6 @@ export async function handleVerify(request) {
             })
         }
 
-        // initialize response
-        let response
-
-        // TODO: RESTORE
-        // const fileName = 'verified.json';
-        // const githubPath = '/repos/Uniswap/sybil-list/contents/';
-
-        // const fileInfo = await fetch(
-        //     'https://api.github.com' + githubPath + fileName,
-        //     {
-        //         headers: {
-        //             Authorization: 'token ' + GITHUB_AUTHENTICATION,
-        //             'User-Agent': USER_AGENT,
-        //         },
-        //     }
-        // );
-        // const fileJSON = await fileInfo.json();
-        // const sha = fileJSON.sha;
-        // Decode the String as json object
-        // var decodedSybilList = JSON.parse(atob(fileJSON.content));
         let subject = {
             twitter: {
                 timestamp: Date.now(),
@@ -141,16 +156,12 @@ export async function handleVerify(request) {
             },
         }
 
-        let vc
         try {
-            console.log('about to VC')
             vc = await makeVerifiableCredential(
                 formattedSigner,
                 ISSUER_ADDRESS,
                 subject
             )
-            // vc = {"test": true};
-            console.log('Passed VC')
         } catch (err) {
             return new Response(null, init, {
                 status: 400,
@@ -158,34 +169,26 @@ export async function handleVerify(request) {
             })
         }
 
-        // TODO: REMOVE ON RESTORE
-        // let fileRes = await fetch(
-        //     'https://raw.githubusercontent.com/Uniswap/sybil-list/master/verified.json'
-        // )
-        // let decodedSybilList = await fileRes.json()
+        vcMap[formattedSigner] = vc
 
-        // decodedSybilList[formattedSigner] = subject
+        const stringData = JSON.stringify(vcMap)
+        const encodedData = btoa(stringData)
 
-        // const stringData = JSON.stringify(decodedSybilList);
-        // const encodedData = btoa(stringData);
+        const octokit = new Octokit({
+            auth: GITHUB_AUTHENTICATION,
+        })
+        const updateResponse = await octokit.request(
+            'PUT ' + githubPath + fileName,
+            {
+                owner: 'uniswap',
+                repo: 'sybil-list',
+                path: fileName,
+                message: 'Linking ' + formattedSigner + ' to handle: ' + handle,
+                sha,
+                content: encodedData,
+            }
+        )
 
-        // const octokit = new Octokit({
-        //     auth: GITHUB_AUTHENTICATION,
-        // });
-        // const updateResponse = await octokit.request(
-        //     'PUT ' + githubPath + fileName,
-        //     {
-        //         owner: 'uniswap',
-        //         repo: 'sybil-list',
-        //         path: fileName,
-        //         message: 'Linking ' + formattedSigner + ' to handle: ' + handle,
-        //         sha,
-        //         content: encodedData,
-        //     }
-        // );
-
-        // TODO: REMOVE ON RESTORE
-        let updateResponse = { status: 200 }
         if (updateResponse.status === 200) {
             // respond with handle if succesul update
             let respBody = { handle: handle, verifiableCredential: vc }
@@ -205,6 +208,7 @@ export async function handleVerify(request) {
         response.headers.append('Vary', 'Origin')
         return response
     } catch (e) {
+        // NOTE: This returns a 200, how I'm not sure.
         response = new Response(null, init, {
             status: 400,
             statusText: 'Error:' + e,
