@@ -6,6 +6,8 @@ module.exports = {
     bundle: path.join(__dirname, './src/index.js'),
   },
 
+  mode: "production",
+
   output: {
     filename: 'worker.js',
     path: path.join(__dirname),
@@ -16,6 +18,7 @@ module.exports = {
       "stream": require.resolve("stream-browserify") 
     }
   },
+
   plugins: [
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],

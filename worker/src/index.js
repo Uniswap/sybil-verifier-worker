@@ -1,6 +1,5 @@
 import Router from './router'
 import { handleVerify } from './handlers/verify'
-console.log("INIT")
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -34,7 +33,6 @@ function handleOptions(request) {
 }
 
 async function handleRequest(request) {
-    console.log('Got this far')
     const r = new Router()
     r.get('.*/verify', request => handleVerify(request))
     r.get(
@@ -52,7 +50,6 @@ async function handleRequest(request) {
 const PROXY_ENDPOINT = '/api'
 
 addEventListener('fetch', event => {
-    console.log('TEST')
     const request = event.request
     const url = new URL(request.url)
     if (url.pathname.startsWith(PROXY_ENDPOINT)) {

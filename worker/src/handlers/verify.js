@@ -33,7 +33,6 @@ const reg = new RegExp('(?<=sig:).*')
  * 4. if signer is the expected address, update gist with address -> handle mapping
  */
 export async function handleVerify(request) {
-    console.log('In handleVerify')
     try {
         // get tweet id and account from url
         const { searchParams } = new URL(request.url)
@@ -56,7 +55,6 @@ export async function handleVerify(request) {
             })
         }
 
-        console.log('Passed twitter')
         // get tweet text and handle
         const tweetContent = twitterResponse.data[0].text
         const handle = twitterResponse.includes.users[0].username
@@ -149,7 +147,6 @@ export async function handleVerify(request) {
             vc = await makeVerifiableCredential(
                 formattedSigner,
                 ISSUER_ADDRESS,
-                SIGNING_KEY,
                 subject
             )
             // vc = {"test": true};

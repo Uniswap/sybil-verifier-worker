@@ -1,11 +1,14 @@
-import { v4 as uuid } from 'uuid'
-import { joinSignature } from 'ethers';
-import { SigningKey } from "@ethersproject/signing-key";
+import { v4 as uuid } from 'uuid';
+import { hashMessage } from "@ethersproject/hash";
+import { arrayify, hexlify, hexZeroPad, splitSignature, joinSignature } from "@ethersproject/bytes";
+import elliptic from "elliptic";
+
+let ec = new elliptic.ec("secp256k1")
+let keyPair = ec.keyFromPrivate(arrayify(hexlify(SIGNING_KEY)));
 
 export async function makeVerifiableCredential(
     subjectAddress,
     issuerAddress,
-    signingAddress,
     subject
 ) {
     let context = [
@@ -43,10 +46,10 @@ export async function makeVerifiableCredential(
         ],
     }
 
-    return await makeEthVc(subjectAddress, signingAddress, doc)
+    return await makeEthVc(subjectAddress, doc)
 }
 
-async function makeEthVc(subjectAddress, signingAddress, doc) {
+async function makeEthVc(subjectAddress, doc) {
     const credentialString = JSON.stringify(doc)
 
     const did = `did:ethr:${subjectAddress}`
@@ -59,7 +62,6 @@ async function makeEthVc(subjectAddress, signingAddress, doc) {
     const keyType = { kty: 'EC', crv: 'secp256k1', alg: 'ES256K-R' }
 
     let prepStr
-    console.log('about to init didkit')
     try {
         const { completeIssueCredential, prepareIssueCredential } = wasm_bindgen
         await wasm_bindgen(wasm)
@@ -71,7 +73,6 @@ async function makeEthVc(subjectAddress, signingAddress, doc) {
             JSON.stringify(keyType)
         )
 
-        console.log('after prepare')
         let preparation = JSON.parse(prepStr)
         const typedData = preparation.signingInput
 
@@ -80,11 +81,14 @@ async function makeEthVc(subjectAddress, signingAddress, doc) {
             throw new Error('Expected EIP-712 TypedData')
         }
 
-        console.log('about to make wallet')
-        const signingKey = new SigningKey(signingAddress)
-
         console.log('about to sign')
-        let signature = joinSignature(signingKey.signDigest(JSON.stringify(typedData)));
+        let signature = keyPair.sign(arrayify(hashMessage(JSON.stringify(typedData))), {canonical: true});
+        signature = joinSignature(splitSignature({
+            recoveryParam: signature.recoveryParam,
+            r: hexZeroPad("0x" + signature.r.toString(16), 32),
+            s: hexZeroPad("0x" + signature.s.toString(16), 32),
+        }));
+        console.log(signature);
 
         console.log('about to complete issue')
         let vcStr = await completeIssueCredential(
@@ -95,6 +99,7 @@ async function makeEthVc(subjectAddress, signingAddress, doc) {
 
         console.log('about to return from vc maker')
         return JSON.parse(vcStr)
+        return { hello: "worker" }
     } catch (err) {
         // TODO: Change to throw
         console.error(err)
