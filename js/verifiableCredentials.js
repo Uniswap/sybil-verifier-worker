@@ -104,7 +104,6 @@ async function makeEthVc(subjectAddress, doc) {
         )
 
         return JSON.parse(vcStr)
-        return { hello: 'worker' }
     } catch (err) {
         throw "Failed in credential preperation"
         return

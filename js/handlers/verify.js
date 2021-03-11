@@ -190,8 +190,7 @@ export async function handleVerify(request) {
 
         if (updateResponse.status === 200) {
             // respond with handle if succesul update
-            let respBody = { handle: handle, verifiableCredential: vc }
-            response = new Response(JSON.stringify(respBody), {
+            response = new Response(JSON.stringify(vc), {
                 status: 200,
                 statusText: 'Succesful verification',
             })
