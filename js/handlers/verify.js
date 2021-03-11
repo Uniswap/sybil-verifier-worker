@@ -63,7 +63,6 @@ export async function handleVerify(request) {
         let vcMap = JSON.parse(atob(fileJSON.content))
         let vc = vcMap[account]
 
-        // TODO: Check tweet ID here.
         if (vc && vc.evidence[0].sybil.twitter.tweetID === `${tweetID}`) {
             response = new Response(JSON.stringify(vc), {
                 status: 200,

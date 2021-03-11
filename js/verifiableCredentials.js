@@ -72,7 +72,6 @@ async function makeEthVc(subjectAddress, doc) {
         const { completeIssueCredential, prepareIssueCredential } = wasm_bindgen
         await wasm_bindgen(wasm)
 
-        console.log('about to prepare')
         prepStr = await prepareIssueCredential(
             credentialString,
             JSON.stringify(proofOptions),
@@ -83,11 +82,9 @@ async function makeEthVc(subjectAddress, doc) {
         const typedData = preparation.signingInput
 
         if (!typedData || !typedData.primaryType) {
-            console.error('proof preparation:', preparation)
             throw new Error('Expected EIP-712 TypedData')
         }
 
-        console.log('about to sign')
         let signature = keyPair.sign(
             arrayify(hashMessage(JSON.stringify(typedData))),
             { canonical: true }
@@ -99,21 +96,17 @@ async function makeEthVc(subjectAddress, doc) {
                 s: hexZeroPad('0x' + signature.s.toString(16), 32),
             })
         )
-        console.log(signature)
 
-        console.log('about to complete issue')
         let vcStr = await completeIssueCredential(
             credentialString,
             JSON.stringify(preparation),
             signature
         )
 
-        console.log('about to return from vc maker')
         return JSON.parse(vcStr)
         return { hello: 'worker' }
     } catch (err) {
-        // TODO: Change to throw
-        console.error(err)
+        throw "Failed in credential preperation"
         return
     }
 }
