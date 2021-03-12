@@ -17,7 +17,6 @@
         "webpack-cli": "^4.5.0"
     },
     "dependencies": {
-        "@octokit/rest": "^18.0.10",
         "eth-sig-util": "^3.0.0",
         "ethers": "^5.0.24",
         "install": "^0.13.0",

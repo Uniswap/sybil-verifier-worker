@@ -2,7 +2,6 @@ import { makeVerifiableCredential } from '../verifiableCredentials'
 import { recoverPersonalSignature } from 'eth-sig-util'
 import { ethers } from 'ethers'
 import { gatherResponse } from '../utils'
-import { Octokit } from '@octokit/rest'
 
 // github api info
 const USER_AGENT = 'Cloudflare Worker'
@@ -40,37 +39,22 @@ export async function handleVerify(request) {
         let tweetID = searchParams.get('id')
         let account = searchParams.get('account')
 
-        // TODO: RESTORE
+        // TODO: USE TO MIGRATE.
         // const githubPath = '/repos/Uniswap/sybil-list/contents/';
-        const githubPath = '/repos/spruceid/uniswap-sybil-list/contents/'
 
-        const fileName = 'verified.json'
-
-        const fileInfo = await fetch(
-            'https://api.github.com' + githubPath + fileName,
-            {
-                headers: {
-                    Authorization: 'token ' + GITHUB_AUTHENTICATION,
-                    'User-Agent': USER_AGENT,
-                },
-            }
-        )
-
-        const fileJSON = await fileInfo.json()
-        const sha = fileJSON.sha
-
-        // Decode the String as json object
-        let vcMap = JSON.parse(atob(fileJSON.content))
-        let vc = vcMap[account]
-
-        if (vc && vc.evidence[0].sybil.twitter.tweetID === `${tweetID}`) {
-            response = new Response(JSON.stringify(vc), {
+        let vc = await vcs.get(account);
+        if (vc) {
+          let vcObj = JSON.parse(vc);
+          if (vcObj?.evidence[0]?.sybil?.twitter?.tweetID === `${tweetID}`) {
+            response = new Response(vc, {
                 status: 200,
             })
 
             response.headers.set('Access-Control-Allow-Origin', '*')
             response.headers.append('Vary', 'Origin')
             return response
+
+          }
         }
 
         // get tweet data from twitter api
@@ -156,52 +140,29 @@ export async function handleVerify(request) {
         }
 
         try {
-            vc = await makeVerifiableCredential(
+            let vcObj = await makeVerifiableCredential(
                 formattedSigner,
                 ISSUER_ADDRESS,
                 subject
             )
+
+            vc = JSON.stringify(vcObj)
+            await vcs.put(formattedSigner, vc)
         } catch (err) {
+            // NOTE: This returns a 200, how I'm not sure.
             return new Response(null, init, {
                 status: 400,
                 statusText: 'Error creating verifiable credential.',
             })
         }
 
-        vcMap[formattedSigner] = vc
 
-        const stringData = JSON.stringify(vcMap)
-        const encodedData = btoa(stringData)
-
-        const octokit = new Octokit({
-            auth: GITHUB_AUTHENTICATION,
+        response = new Response(vc, {
+            status: 200,
+            statusText: 'Succesful verification',
         })
-        const updateResponse = await octokit.request(
-            'PUT ' + githubPath + fileName,
-            {
-                owner: 'uniswap',
-                repo: 'sybil-list',
-                path: fileName,
-                message: 'Linking ' + formattedSigner + ' to handle: ' + handle,
-                sha,
-                content: encodedData,
-            }
-        )
 
-        if (updateResponse.status === 200) {
-            // respond with handle if succesul update
-            response = new Response(JSON.stringify(vc), {
-                status: 200,
-                statusText: 'Succesful verification',
-            })
-            response.headers.set('Content-Type', 'appliction/json')
-        } else {
-            response = new Response(null, init, {
-                status: 400,
-                statusText: 'Error updating list.',
-            })
-        }
-
+        response.headers.set('Content-Type', 'appliction/json')
         response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.append('Vary', 'Origin')
         return response
