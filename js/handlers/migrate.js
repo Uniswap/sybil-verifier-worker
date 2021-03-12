@@ -1,4 +1,5 @@
 import { makeVerifiableCredential } from '../verifiableCredentials'
+import { hashMessage } from '@ethersproject/hash'
 import {
     arrayify,
     hexlify,
@@ -14,7 +15,7 @@ export async function handleMigrate(request) {
         let body = request.body;
         let migrationEntry = JSON.parse(body)
         let {addr, subject, signature} = migrationEntry;
-        let valid = keyPair.verify(subject, signature)
+        let valid = keyPair.verify(arrayify(hashMessage(subject)), signature)
         if (!valid) {
             return new Response(null, init, {
                 status: 400,
