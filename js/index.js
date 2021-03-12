@@ -1,5 +1,6 @@
 import Router from './router'
 import { handleVerify } from './handlers/verify'
+import { handleMigrate } from './handlers/migrate'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -35,6 +36,7 @@ function handleOptions(request) {
 async function handleRequest(request) {
     const r = new Router()
     r.get('.*/verify', request => handleVerify(request))
+    r.post('.*/migration', request => handleMigrate(request))
     r.get(
         '/',
         () =>
