@@ -34,6 +34,7 @@ const reg = new RegExp('(?<=sig:).*')
 export async function handleVerify(request) {
     let response
     try {
+        console.log('HERE')
         // get tweet id and account from url
         const { searchParams } = new URL(request.url)
         let tweetID = searchParams.get('id')
@@ -42,19 +43,18 @@ export async function handleVerify(request) {
         // TODO: USE TO MIGRATE.
         // const githubPath = '/repos/Uniswap/sybil-list/contents/';
 
-        let vc = await vcs.get(account);
+        let vc = await VERIFIABLE_CREDENTIAL_STORE.get(account)
         if (vc) {
-          let vcObj = JSON.parse(vc);
-          if (vcObj?.evidence[0]?.sybil?.twitter?.tweetID === `${tweetID}`) {
-            response = new Response(vc, {
-                status: 200,
-            })
+            let vcObj = JSON.parse(vc)
+            if (vcObj?.evidence[0]?.sybil?.twitter?.tweetID === `${tweetID}`) {
+                response = new Response(vc, {
+                    status: 200,
+                })
 
-            response.headers.set('Access-Control-Allow-Origin', '*')
-            response.headers.append('Vary', 'Origin')
-            return response
-
-          }
+                response.headers.set('Access-Control-Allow-Origin', '*')
+                response.headers.append('Vary', 'Origin')
+                return response
+            }
         }
 
         // get tweet data from twitter api
@@ -147,7 +147,7 @@ export async function handleVerify(request) {
             )
 
             vc = JSON.stringify(vcObj)
-            await vcs.put(formattedSigner, vc)
+            await VERIFIABLE_CREDENTIAL_STORE.put(formattedSigner, vc)
         } catch (err) {
             // NOTE: This returns a 200, how I'm not sure.
             return new Response(null, init, {
@@ -155,7 +155,6 @@ export async function handleVerify(request) {
                 statusText: 'Error creating verifiable credential.',
             })
         }
-
 
         response = new Response(vc, {
             status: 200,

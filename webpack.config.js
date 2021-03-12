@@ -1,5 +1,6 @@
 const path = require('path')
 const webpack = require('webpack')
+const TerserPlugin = require('terser-webpack-plugin')
 
 module.exports = {
     entry: {
@@ -8,15 +9,23 @@ module.exports = {
 
     mode: 'production',
 
+    optimization: {
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({
+                terserOptions: {
+                    format: {
+                        comments: false,
+                    },
+                },
+                extractComments: false,
+            }),
+        ],
+    },
+
     output: {
         filename: 'worker.js',
         path: path.join(__dirname, './worker'),
-    },
-
-    resolve: {
-        fallback: {
-            stream: require.resolve('stream-browserify'),
-        },
     },
 
     plugins: [
@@ -25,4 +34,10 @@ module.exports = {
             process: 'process/browser',
         }),
     ],
+
+    resolve: {
+        fallback: {
+            stream: require.resolve('stream-browserify'),
+        },
+    },
 }

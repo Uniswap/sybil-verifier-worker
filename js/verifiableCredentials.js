@@ -9,9 +9,6 @@ import {
 } from '@ethersproject/bytes'
 import elliptic from 'elliptic'
 
-let ec = new elliptic.ec('secp256k1')
-let keyPair = ec.keyFromPrivate(arrayify(hexlify(SIGNING_KEY)))
-
 export async function makeVerifiableCredential(
     subjectAddress,
     issuerAddress,
@@ -56,6 +53,8 @@ export async function makeVerifiableCredential(
 }
 
 async function makeEthVc(subjectAddress, doc) {
+    const ec = new elliptic.ec('secp256k1')
+    const keyPair = ec.keyFromPrivate(arrayify(hexlify(SIGNING_KEY)))
     const credentialString = JSON.stringify(doc)
 
     const did = `did:ethr:${subjectAddress}`
@@ -105,7 +104,7 @@ async function makeEthVc(subjectAddress, doc) {
 
         return JSON.parse(vcStr)
     } catch (err) {
-        throw "Failed in credential preperation"
+        throw 'Failed in credential preperation'
         return
     }
 }

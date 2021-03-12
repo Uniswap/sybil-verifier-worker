@@ -1,16 +1,16 @@
 {
-  "name": "migration",
-  "version": "1.0.0",
-  "description": "",
-  "main": "migration_script.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "elliptic": "^6.5.4",
-    "ethers": "^5.0.32",
-    "node-fetch": "^2.6.1"
-  }
+    "name": "migration",
+    "version": "1.0.0",
+    "description": "",
+    "main": "migration_script.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "elliptic": "^6.5.4",
+        "ethers": "^5.0.32",
+        "node-fetch": "^2.6.1"
+    }
 }

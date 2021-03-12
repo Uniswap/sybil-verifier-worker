@@ -1,25 +1,21 @@
 import { makeVerifiableCredential } from '../verifiableCredentials'
 import { hashMessage } from '@ethersproject/hash'
-import {
-    arrayify,
-    hexlify,
-} from '@ethersproject/bytes'
+import { arrayify, hexlify } from '@ethersproject/bytes'
 import elliptic from 'elliptic'
-
-// IF TOO SLOW, CENTRALIZE IN INDEX AND PASS DOWN
-let ec = new elliptic.ec('secp256k1')
-let keyPair = ec.keyFromPrivate(arrayify(hexlify(SIGNING_KEY)))
 
 export async function handleMigrate(request) {
     try {
-        let body = request.body;
-        let migrationEntry = JSON.parse(body)
-        let {addr, subject, signature} = migrationEntry;
+        let ec = new elliptic.ec('secp256k1')
+        let keyPair = ec.keyFromPrivate(arrayify(hexlify(SIGNING_KEY)))
+
+        let body = await request.json()
+
+        let { addr, subject, signature } = body
         let valid = keyPair.verify(arrayify(hashMessage(subject)), signature)
         if (!valid) {
-            return new Response(null, init, {
+            return new Response(null, {
                 status: 400,
-                statusText: 'Invalid signature' 
+                statusText: 'Invalid signature',
             })
         }
         let vcObj = await makeVerifiableCredential(
@@ -30,7 +26,7 @@ export async function handleMigrate(request) {
 
         let vc = JSON.stringify(vcObj)
 
-        await vcs.put(addr, vc)
+        await VERIFIABLE_CREDENTIAL_STORE.put(addr, vc)
 
         let response = new Response(vc, {
             status: 200,
@@ -43,7 +39,7 @@ export async function handleMigrate(request) {
 
         return response
     } catch (e) {
-        return new Response(null, init, {
+        return new Response(null, {
             status: 400,
             statusText: 'Error:' + e,
         })
