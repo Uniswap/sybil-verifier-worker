@@ -1,6 +1,11 @@
 name = "sybil-verifier"
-type = "webpack"
+type = "rust"
 account_id = "<your cloudlare account id here>"
-workers_dev = true 
+# Add namespace via wrangler
+# preview optional
+# kv_namespaces = [
+#     { binding = "VERIFIABLE_CREDENTIAL_STORE", id = "<ID>", preview_id = "<PREVIEW_UUID>" }
+# ]
+workers_dev = true
 route = ""
 zone_id = ""
