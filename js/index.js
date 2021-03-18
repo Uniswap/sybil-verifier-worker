@@ -1,5 +1,6 @@
 import Router from './router'
 import { handleVerify } from './handlers/verify'
+import { handleVerifiableCredential } from './handlers/verifiableCredential.js'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -35,6 +36,10 @@ function handleOptions(request) {
 async function handleRequest(request) {
     const r = new Router()
     r.get('.*/verify', request => handleVerify(request))
+    r.get('.*/verifiable-credential', request =>
+        handleVerifiableCredential(request)
+    )
+
     r.get(
         '/',
         () =>

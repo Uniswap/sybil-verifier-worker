@@ -1,25 +1,7 @@
 import { recoverPersonalSignature } from 'eth-sig-util'
-import { ethers } from 'ethers'
+import { getAddress } from '@ethersproject/address'
 import { gatherResponse } from '../utils'
 import { Octokit } from '@octokit/rest'
-
-// github api info
-const USER_AGENT = 'Cloudflare Worker'
-
-// format request for twitter api
-var requestHeaders = new Headers()
-requestHeaders.append('Authorization', 'Bearer ' + TWITTER_BEARER)
-var requestOptions = {
-    method: 'GET',
-    headers: requestHeaders,
-    redirect: 'follow',
-}
-const init = {
-    headers: { 'content-type': 'application/json' },
-}
-
-// regex for parsing tweet
-const reg = new RegExp('(?<=sig:).*')
 
 /**
  * @param {*} request
@@ -32,6 +14,24 @@ const reg = new RegExp('(?<=sig:).*')
  * 4. if signer is the expected address, update gist with address -> handle mapping
  */
 export async function handleVerify(request) {
+    // github api info
+    const USER_AGENT = 'Cloudflare Worker'
+
+    // format request for twitter api
+    var requestHeaders = new Headers()
+    requestHeaders.append('Authorization', 'Bearer ' + TWITTER_BEARER)
+    var requestOptions = {
+        method: 'GET',
+        headers: requestHeaders,
+        redirect: 'follow',
+    }
+    const init = {
+        headers: { 'content-type': 'application/json' },
+    }
+    // regex for parsing tweet
+    const reg = new RegExp('(?<=sig:).*')
+    let response
+
     try {
         // get tweet id and account from url
         const { searchParams } = new URL(request.url)
@@ -102,7 +102,7 @@ export async function handleVerify(request) {
         })
 
         // format with chekcsummed address
-        const formattedSigner = ethers.utils.getAddress(signer)
+        const formattedSigner = getAddress(signer)
 
         // if signer found is not the expected signer, alert client and dont update gist
         if (account !== formattedSigner) {
@@ -112,11 +112,8 @@ export async function handleVerify(request) {
             })
         }
 
-        // initialize response
-        let response
-
         const fileName = 'verified.json'
-        const githubPath = '/repos/Uniswap/sybil-list/contents/'
+        const githubPath = `/repos/${REPO_OWNER}/sybil-list/contents/`
 
         const fileInfo = await fetch(
             'https://api.github.com' + githubPath + fileName,
@@ -150,7 +147,7 @@ export async function handleVerify(request) {
         const updateResponse = await octokit.request(
             'PUT ' + githubPath + fileName,
             {
-                owner: 'uniswap',
+                owner: `${REPO_OWNER}`,
                 repo: 'sybil-list',
                 path: fileName,
                 message: 'Linking ' + formattedSigner + ' to handle: ' + handle,
@@ -174,11 +171,12 @@ export async function handleVerify(request) {
 
         response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.append('Vary', 'Origin')
-        return response
     } catch (e) {
         response = new Response(null, init, {
             status: 400,
             statusText: 'Error:' + e,
         })
     }
+
+    return response
 }
