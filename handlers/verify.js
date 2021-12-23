@@ -101,7 +101,7 @@ export async function handleVerify(request) {
             sig,
         })
 
-        // format with chekcsummed address
+        // format with checksummed address
         const formattedSigner = ethers.utils.getAddress(signer)
 
         // if signer found is not the expected signer, alert client and dont update gist
@@ -176,7 +176,7 @@ export async function handleVerify(request) {
         response.headers.append('Vary', 'Origin')
         return response
     } catch (e) {
-        response = new Response(null, init, {
+        return new Response(null, init, {
             status: 400,
             statusText: 'Error:' + e,
         })
