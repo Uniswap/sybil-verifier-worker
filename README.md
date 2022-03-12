@@ -2,7 +2,7 @@
 
 This is a verifier used by the Sybil interface for verifying links between Ethereum addresses and Twitter profiles. 
 
-- Sybil interface for governance: [https://sybil.org]https://sybil.org)
+- Sybil interface for governance: [https://sybil.org](https://sybil.org)
 - Sybil documentation: [https://github.com/Uniswap/sybil-list](https://github.com/Uniswap/sybil-list)
 - Interface repo: [https://github.com/Uniswap/sybil-interface](https://github.com/Uniswap/sybil-interface)
 - Read the Sybil announcement post : [https://uniswap.org/blog/sybil/](https://uniswap.org/blog/sybil/)
